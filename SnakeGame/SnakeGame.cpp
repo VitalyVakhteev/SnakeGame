@@ -22,5 +22,5 @@ struct User {
 
 int main()
 {
-
+    cout << "hi";
 }
