@@ -122,11 +122,25 @@ bool load_player_data(User& player) {
 
 void save_player_data(const User& player) {
     // Todo: use the OFSTREAM on DATA_FILE, write the player.name and player.high_score
+    ofstream out_stream;
+    out_stream.open(DATA_FILE);
+
+    if (out_stream.is_open()) {
+        out_stream << player.name << '\n';
+        out_stream << player.high_score << '\n';
+        out_stream.close();
+    }
+    else {
+        cout << "ERROR: FAILED TO SAVE PLAYER";
+    }
 }
 
 void create_or_edit_player(User& player) {
-    // Todo: ask for the name, save to player.name
-    // Todo: save_player_data(player)
+    cout << "\nEnter player name: ";
+    cin >> player.name;
+
+    save_player_data(player);
+
 }
 
 void display_main_menu(const User& player) {
