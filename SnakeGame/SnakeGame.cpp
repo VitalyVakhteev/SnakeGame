@@ -121,7 +121,6 @@ bool load_player_data(User& player) {
 }
 
 void save_player_data(const User& player) {
-    // Todo: use the OFSTREAM on DATA_FILE, write the player.name and player.high_score
     ofstream out_stream;
     out_stream.open(DATA_FILE);
 
@@ -153,7 +152,11 @@ MenuChoice get_menu_choice() {
 }
 
 void init_grid(Cell grid[GRID_SIZE][GRID_SIZE]) {
-    // Todo: Set every cell in grid to CellContains::EMPTY with a nested for loop
+    for (int i = 0; i < GRID_SIZE; i++) {
+        for (int j = 0; j < GRID_SIZE; j++) {
+            grid[i][j].object = CellContains::EMPTY;
+        }
+    }
 }
 
 void init_snake(deque<Point>& snake, Cell grid[GRID_SIZE][GRID_SIZE]) {
@@ -162,8 +165,18 @@ void init_snake(deque<Point>& snake, Cell grid[GRID_SIZE][GRID_SIZE]) {
 }
 
 bool place_apple(Cell grid[GRID_SIZE][GRID_SIZE]) {
-    // TODO: choose a random EMPTY cell in the grid and set it to APPLE with rand()
-    return false;
+    if (grid_is_full(grid)) {
+        return false;
+    }
+    int rand_row = rand() % GRID_SIZE;
+    int rand_col = rand() % GRID_SIZE;
+    do {
+        int rand_row = rand() % GRID_SIZE;
+        int rand_col = rand() % GRID_SIZE;
+
+    } while (grid[rand_row][rand_col].object != CellContains::EMPTY);
+    grid[rand_row][rand_col].object = CellContains::APPLE;
+    return true;
 }
 
 Result run_game(User& player) {
@@ -215,8 +228,15 @@ bool hits_self(const deque<Point>& snake, const Point& next) {
 }
 
 bool grid_is_full(Cell grid[GRID_SIZE][GRID_SIZE]) {
-    // Todo: return true if no grid cell is EMPTY
-    return false;
+    for (int i = 0; i < GRID_SIZE; i++) {
+        for (int j = 0; j < GRID_SIZE; j++) {
+            if (grid[i][j].object == CellContains::EMPTY) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void render(Cell grid[GRID_SIZE][GRID_SIZE], const deque<Point>& snake) {
@@ -230,5 +250,8 @@ void show_end_screen(Result result, short int score, const User& player) {
 }
 
 void update_high_score(User& player, int score) {
-    // if the current score > player.high_score, update the player's high score and run save_player_data
+    if (score > player.high_score) {
+        player.high_score = score;
+    }
+    save_player_data(player);
 }
