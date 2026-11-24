@@ -48,7 +48,7 @@ struct Cell {
 };
 
 struct Point {
-    int x; 
+    int x;
     int y;
 };
 
@@ -82,12 +82,18 @@ void update_high_score(User& player, int score);
 
 int main()
 {
-    // we use the current Unix timestamp and cast it to an unsigned integer to use it as a seed for rand 
+    // we use the current Unix timestamp and cast it to an unsigned integer to use it as a seed for rand
     srand(static_cast<unsigned>(time(nullptr)));
 
     User current_player;
+    short int current_score;
 
-    // TODO: if load_player_data fails, call create_or_edit_player
+    bool success = load_player_data(current_player);
+
+    if (!success) {
+        cout << "No player found. Let's create a player account for you!";
+        create_or_edit_player(current_player);
+    }
 
     bool running = true;
     while (running) {
@@ -95,9 +101,25 @@ int main()
         // if START, run_game and show_end screen, update_high_score
         // if EDIT_PLAYER, create_or_edit_player
         // if QUIT, running is set to false
+
+        display_main_menu();
+	MenuChoice choice = get_menu_choice();
+	switch (choice) {
+	    case (MenuChoice::START):
+		Result player_result = run_game(current_player, current_score);
+		show_end_screen(result, current_score, current_player);
+		update_high_score(current_player, current_score);
+		break;
+	    case (MenuChoice::EDIT_PLAYER):
+		create_or_edit_player(current_player);
+		break;
+	    case (MenuChoice::QUIT):
+		running = false;
+		break;
+	}
         running = false;
     }
-    
+
     return 0;
 }
 
@@ -139,7 +161,6 @@ void create_or_edit_player(User& player) {
     cin >> player.name;
 
     save_player_data(player);
-
 }
 
 void display_main_menu(const User& player) {
@@ -160,6 +181,16 @@ void init_grid(Cell grid[GRID_SIZE][GRID_SIZE]) {
 }
 
 void init_snake(deque<Point>& snake, Cell grid[GRID_SIZE][GRID_SIZE]) {
+    int center_of_grid = (rand() % GRID_SIZE) / 2;
+    int randx = (rand() % (SPAWN_RADIUS + 1)) - (SPAWN_RADIUS / 2);
+    int randy = (rand() % (SPAWN_RADIUS + 1)) - (SPAWN_RADIUS / 2);
+
+    Point rand_point;
+    rand_point.x = center_of_grid + randx;
+    rand_point.y = center_of_grid + randy;
+
+    snake.push_back(rand_point);
+    grid[randx][randy].object = CellContains::SNAKE;
     // Todo: pick a random cell within SPAWN_RADIUS of the center of the grid
     // Todo: push it to the snake queue as the head point, and mark the corresponding grid cell as CellContains::SNAKE
 }
@@ -179,10 +210,9 @@ bool place_apple(Cell grid[GRID_SIZE][GRID_SIZE]) {
     return true;
 }
 
-Result run_game(User& player) {
+Result run_game(User& player, short int& score) {
     Cell grid[GRID_SIZE][GRID_SIZE];
     deque<Point> snake;
-    // todo: decide if we want a random direction
     Direction dir = Direction::RIGHT;
 
     init_grid(grid);
